@@ -1,0 +1,61 @@
+.post_box {
+width: 95%;
+height: 100px;
+padding: 10px;
+background-color: #FFFFFF;
+}
+.user_id_box {
+width: 30%;
+height: 10px;
+padding: 10px;
+background-color: #FFFFFF;
+}
+.post_box_wrapper {
+margin: auto;
+color: white;
+width: 50%;
+padding: 20px;
+background-color: #0099FF;
+}
+.content_box_wrapper{
+margin: auto;
+color: black;
+width: 50%;
+padding: 10px;
+background-color: #d9f2e6;
+}
+.tweet{
+width: 95%;
+padding: 20px;
+margin:5px;
+font-size: 26px;
+display: inline-block;
+background-color: #FFFFFF;
+}
+.button {
+background-color: #008CBA;
+padding: 10px;
+border: none;
+color: white;
+padding: 15px 32px;
+text-align: center;
+text-decoration: none;
+display: inline-block;
+font-size: 16px;
+}
+
+.button_on {
+background-color: #33cccc;
+padding: 10px;
+border: none;
+color: white;
+padding: 15px 32px;
+text-align: center;
+text-decoration: none;
+display: inline-block;
+font-size: 16px;
+}
+
+p {
+margin:auto;
+}
