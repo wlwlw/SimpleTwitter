@@ -21,7 +21,7 @@ func init() {
 func main() {
 	flag.Parse()
 
-	hostPort := net.JoinHostPort("localhost", strconv.Itoa(*port))
+	hostPort := net.JoinHostPort("0.0.0.0", strconv.Itoa(*port))
 	_, err := webserver.NewWebServer(hostPort, *serverAddress)
 	if err != nil {
 		log.Fatalln("Server could not be created:", err)
