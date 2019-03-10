@@ -106,10 +106,8 @@ function main {
     echo "Starting ${STW_SERVER_NUM} app server(s)..."
     startStwServers
 	echo "Starting web server..."
-    ${WEB_SERVER} -port=${WEB_PORT} -masterApp="localhost:${STW_PORT}" &
+    ${WEB_SERVER} -port=${WEB_PORT} -masterApp="localhost:${STW_PORT}"
     WEB_SERVER_PID=$!
-
-    read -p "Press enter to stop. "
 
     kill -9 ${WEB_SERVER_PID}
     wait ${WEB_SERVER_PID} 2> /dev/null
