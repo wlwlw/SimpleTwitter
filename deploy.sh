@@ -106,6 +106,7 @@ function main {
     echo "Starting ${STW_SERVER_NUM} app server(s)..."
     startStwServers
 	echo "Starting web server..."
+    echo "Do not interrupt by Ctrl-C. Manually kill rwebserver process instead."
     ${WEB_SERVER} -port=${WEB_PORT} -masterApp="localhost:${STW_PORT}"
     WEB_SERVER_PID=$!
 

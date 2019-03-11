@@ -186,6 +186,10 @@ var displayPage = function(page) {
     flushContent();
 }
 
+var switchUser = function() {
+    flushContent()
+}
+
 var displayHome = function() {
     displayPage("Home");
 };
