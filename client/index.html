@@ -7,27 +7,19 @@
 </head>
 <body bgcolor="#d9f2e6">
   <div class="content_box_wrapper" id="navigation_bar">
-  <div class="button_on">
-    <botton onclick="displayHome()">Home</button>
-  </div>
-  <div class="button">
-    <botton onclick="displayMyTimeline()">MyTimeline</button>
-  </div>
+    <button class="button_on" onclick="displayHome()">Home</button>
+    <button class="button" onclick="displayMyTimeline()">MyTimeline</button>
 <!--   <div class="button">
     <botton onclick="displayDiscover()">Discover</button>
   </div> -->
   </div>
   <div class="post_box_wrapper">
     USER ID :  <input class="user_id_box" type="text" id="post_UserID" value="Test"> 
-    <div class="button">
-      <botton onclick="switchUser()">Switch User</button>
-    </div>
+    <button class="button" onclick="switchUser()">Switch User</button>
     <br>
     <textarea class="post_box" id="post_Contents">Type here.</textarea>
     <br>
-    <div class="button">
-      <botton onclick="postTweet()">Post</button>
-    </div>
+    <button class="button" onclick="postTweet()">Post</button>
   </div> 
   <div class="content_box_wrapper" id="content">
   </div>

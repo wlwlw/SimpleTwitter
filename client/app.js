@@ -134,8 +134,7 @@ var flushContent = function() {
     for (i=0; i<naviButtons.length; i++){
         e = naviButtons[i];
         if(e.className == "button_on"){
-            bu = e.childNodes[1];
-            page = bu.firstChild.nodeValue.trim();
+            page = e.firstChild.nodeValue.trim();
             break;
         }
     }
@@ -175,8 +174,7 @@ var displayPage = function(page) {
     for (i=0; i<naviButtons.length; i++){
         e = naviButtons[i];
         if(e.className == "button" || e.className == "button_on"){
-            bu = e.childNodes[1];
-            if (bu.firstChild.nodeValue.trim() == page) {
+            if (e.firstChild.nodeValue.trim() == page) {
                 e.setAttribute("class", "button_on");
             } else {
                 e.setAttribute("class", "button");
