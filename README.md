@@ -9,7 +9,7 @@ The backend of this project is an implementation to [https://github.com/CMU-440-
 The code is organized as follows:
 
 ```
-deploy.sh 						   Deploy system on localhost:8080			
+deploy.sh						   Deploy system on localhost:8080			
 
 bin/                               Compiled binaries
 
