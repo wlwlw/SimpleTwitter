@@ -9,14 +9,14 @@ The backend of this project is an implementation to [https://github.com/CMU-440-
 The code is organized as follows:
 
 ```
-deploy.sh						   Deploy system on localhost:8080			
+deploy.sh                          Deploy system on localhost:8080
 
 bin/                               Compiled binaries
 
-client/							   Front-end of SimpleTwitter
+client/                            Front-end of SimpleTwitter
 
 src/
-  webserver/					   Web server of SimpleTwitter
+  webserver/                       Web server of SimpleTwitter
   stwclient/                       Client of stwserver
   stwserver/                       Application Server
   libstore/                        Client of storage server as a library
