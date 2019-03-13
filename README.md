@@ -58,9 +58,9 @@ $GOPATH/tests/runall.sh
 To start up each server manually, you can first
 
 ```
-go install github.com/runners/rstorage
-go install github.com/runners/rstwserver
-go install github.com/runners/rwebserver
+go install runners/rstorage
+go install runners/rstwserver
+go install runners/rwebserver
 ```
 
 then

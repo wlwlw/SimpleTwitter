@@ -238,8 +238,8 @@ function testHugeLoadPerformance1 {
 
 function testHugeLoadPerformance2 {
     echo "Running testtestHugeLoadPerformance2:"
-    STORAGE_ID=('0' '0')
-    STW_SERVER_NUM=2
+    STORAGE_ID=('0' '0' '0')
+    STW_SERVER_NUM=3
     CLIENT_COUNT=('100')
     TIMEOUT=30
     testStress
@@ -287,8 +287,8 @@ testStressDupUserMultipleStwMultipleStorage
 
 echo "Warning: huge load test better run one by one if running on single host"
 
-testHugeLoadPerformance1
-# testHugeLoadPerformance2
+# testHugeLoadPerformance1
+testHugeLoadPerformance2
 # testHugeLoadPerformance3
 # testHugeLoadPerformance4
 
