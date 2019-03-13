@@ -227,6 +227,51 @@ function testStressDupUserMultipleStwMultipleStorage {
     testStress
 }
 
+function testHugeLoadPerformance1 {
+    echo "Running testHugeLoadPerformance1:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('100')
+    TIMEOUT=30
+    testStress
+}
+
+function testHugeLoadPerformance2 {
+    echo "Running testtestHugeLoadPerformance2:"
+    STORAGE_ID=('0' '0')
+    STW_SERVER_NUM=2
+    CLIENT_COUNT=('100')
+    TIMEOUT=30
+    testStress
+}
+
+function testHugeLoadPerformance3 {
+    echo "Running testtestHugeLoadPerformance3:"
+    STORAGE_ID=('0' '0' '0' '0' '0')
+    STW_SERVER_NUM=5
+    CLIENT_COUNT=('100')
+    TIMEOUT=30
+    testStress
+}
+
+function testHugeLoadPerformance4 {
+    echo "Running testtestHugeLoadPerformance4:"
+    STORAGE_ID=('0' '0' '0' '0' '0' '0' '0' '0' '0' '0')
+    STW_SERVER_NUM=10
+    CLIENT_COUNT=('100')
+    TIMEOUT=30
+    testStress
+}
+
+function testHugeLoadPerformance5 {
+    echo "Running testtestHugeLoadPerformance4:"
+    STORAGE_ID=('0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0' '0')
+    STW_SERVER_NUM=20
+    CLIENT_COUNT=('100')
+    TIMEOUT=30
+    testStress
+}
+
 # Run tests.
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -239,5 +284,12 @@ testStressMultipleClientMultipleStwMultipleStorage
 testStressDoubleClientMultipleStwMultipleStorage
 testStressDupUserMultipleStwSingleStorage
 testStressDupUserMultipleStwMultipleStorage
+
+echo "Warning: huge load test better run one by one if running on single host"
+
+testHugeLoadPerformance1
+# testHugeLoadPerformance2
+# testHugeLoadPerformance3
+# testHugeLoadPerformance4
 
 echo "Passed (${PASS_COUNT}/$((PASS_COUNT + FAIL_COUNT))) tests"

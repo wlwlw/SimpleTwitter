@@ -25,7 +25,7 @@ const (
 var (
 	portnum  = flag.Int("port", 9010, "server port # to connect to")
 	clientId = flag.String("clientId", "0", "client id for user")
-	numCmds  = flag.Int("numCmds", 1000, "number of random commands to execute")
+	numCmds  = flag.Int("numCmds", 1000, "number of random commands to execute per client")
 	seed     = flag.Int64("seed", 0, "seed for random number generator used to execute commands")
 )
 
@@ -63,6 +63,7 @@ func main() {
 		LOGE.Fatalf("FAIL: user %s not an integer\n", user)
 	}
 	numTargets, err := strconv.Atoi(flag.Arg(1))
+	// num := (*numCmds)*numTargets
 	if err != nil {
 		LOGE.Fatalf("FAIL: numTargets invalid %s\n", flag.Arg(1))
 	}
@@ -105,13 +106,13 @@ func main() {
 		fmt.Println("HomeTimeline:", gtbs)
 	}
 	t := time.Now()
-	old_cmd :=cmds[0]
+	//old_cmd :=cmds[0]
 	for _, cmd := range cmds {
-		if time.Now().Sub(t)>100*time.Millisecond {
-			fmt.Println(old_cmd, "is Slow")
-		}
-		t = time.Now()
-		old_cmd = cmd
+		// if time.Now().Sub(t)>100*time.Millisecond {
+		// 	fmt.Println(old_cmd, "is Slow")
+		// }
+		// t = time.Now()
+		// old_cmd = cmd
 		switch cmd {
 		case Subscribe:
 			target := rand.Intn(numTargets)
@@ -141,7 +142,7 @@ func main() {
 				LOGE.Fatalf("FAIL: Timeline returned error status '%s'\n", statusMap[status])
 			}
 			if !validatePosts(&posts, numTargets) {
-				fmt.Println(&posts, numTargets)
+				//fmt.Println(&posts, numTargets)
 				LOGE.Fatalln("FAIL: failed while validating returned posts")
 			}
 		case Post:
@@ -169,6 +170,7 @@ func main() {
 			}
 		}
 	}
+	fmt.Println("Executed 1000 operations in: ", time.Now().Sub(t))
 	fmt.Println("PASS")
 	os.Exit(7)
 }
@@ -198,7 +200,7 @@ func validatePosts(posts *[]stwrpc.Post, numTargets int) bool {
 		}
 		userClientId := fmt.Sprintf("%s;%s", post.UserID, valAndId[1])
 		lastVal := userIdToLastVal[userClientId]
-		if val%numTargets == user && (lastVal == 0 || lastVal == val+numTargets || lastVal == val) {
+		if val%numTargets == user && (lastVal == 0 || lastVal == val+numTargets) {
 			userIdToLastVal[userClientId] = val
 		} else {
 			fmt.Println("invalid:", lastVal, val)

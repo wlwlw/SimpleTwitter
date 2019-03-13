@@ -238,13 +238,10 @@ func (ss *storageServer) getAppServer(hostPort string) *rpc.Client {
 }
 
 func (ss *storageServer) revokeLease(key string) {
-	ss.lock.Lock()
 	tenants, ok := ss.tenants[key]
-	ss.lock.Unlock()
 	if !ok {
 		return
 	}
-	ss.lock.Lock()
 	for _, leaseRecord := range tenants {
 		host, t := util.ParseLeaseRecord(leaseRecord)
 		expire_t := t+storagerpc.LeaseSeconds+storagerpc.LeaseGuardSeconds
@@ -266,7 +263,6 @@ func (ss *storageServer) revokeLease(key string) {
 		}
 	}
 	delete(ss.tenants, key)
-	ss.lock.Unlock()
 }
 
 func (ss *storageServer) Delete(args *storagerpc.DeleteArgs, reply *storagerpc.DeleteReply) error {
@@ -276,13 +272,12 @@ func (ss *storageServer) Delete(args *storagerpc.DeleteArgs, reply *storagerpc.D
 		return nil
 	}
 	ss.lock.Lock()
+	defer ss.lock.Unlock()
 	_, ok := ss.storage[key]
-	ss.lock.Unlock()
+	
 	if ok {
 		ss.revokeLease(key)
-		ss.lock.Lock()
 		delete(ss.storage, key)
-		ss.lock.Unlock()
 		reply.Status = storagerpc.OK
 	} else {
 		reply.Status = storagerpc.KeyNotFound
@@ -321,11 +316,12 @@ func (ss *storageServer) Put(args *storagerpc.PutArgs, reply *storagerpc.PutRepl
 		reply.Status = storagerpc.WrongServer
 		return nil
 	}
-	
-	ss.revokeLease(key)
 	ss.lock.Lock()
+	defer ss.lock.Unlock()
+	ss.revokeLease(key)
+	
 	ss.storage[key] = []string{args.Value}
-	ss.lock.Unlock()
+	
 	reply.Status = storagerpc.OK
 	return nil
 }
@@ -338,21 +334,18 @@ func (ss *storageServer) AppendToList(args *storagerpc.PutArgs, reply *storagerp
 	}
 	val := args.Value
 	ss.lock.Lock()
+	defer ss.lock.Unlock()
 	values, ok := ss.storage[key]
-	ss.lock.Unlock()
+	
 	if ok {
 		if len(values) < 1 {
-			ss.lock.Lock()
 			ss.storage[key] = append(values, val)
-			ss.lock.Unlock()
 			reply.Status = storagerpc.OK
 			return nil
 		}
 		if values[len(values)-1] < val {
 			ss.revokeLease(key)
-			ss.lock.Lock()
 			ss.storage[key] = append(values, val)
-			ss.lock.Unlock()
 			reply.Status = storagerpc.OK
 			return nil
 		}
@@ -365,19 +358,15 @@ func (ss *storageServer) AppendToList(args *storagerpc.PutArgs, reply *storagerp
 
 		ss.revokeLease(key)
 		// insert value at index i
-		ss.lock.Lock()
 		values = append(values, "")
 		copy(values[i+1:], values[i:])
 		values[i] = val
 		ss.storage[key] = values
-		ss.lock.Unlock()
 
 		reply.Status = storagerpc.OK
 		return nil
 	} else {
-		ss.lock.Lock()
 		ss.storage[key] = []string{val}
-		ss.lock.Unlock()
 		reply.Status = storagerpc.OK
 	}
 	return nil
@@ -391,27 +380,24 @@ func (ss *storageServer) RemoveFromList(args *storagerpc.PutArgs, reply *storage
 	}
 	val := args.Value
 	ss.lock.Lock()
+	defer ss.lock.Unlock()
 	values, ok := ss.storage[key]
-	ss.lock.Unlock()
+	
 	if ok {
 		if len(values) < 1 {
 			reply.Status = storagerpc.ItemNotFound
 			return nil
 		}
-		ss.lock.Lock()
 		mid := util.BinarySearchString(values, val)
 		exists := false
 		if mid<len(values) && values[mid]==val {
 			exists = true
 		}
-		ss.lock.Unlock()
 		if exists {
 			// remove value at index mid
 			ss.revokeLease(key)
-			ss.lock.Lock()
 			copy(values[mid:], values[mid+1:])
 			ss.storage[key] = values[:len(values)-1]
-			ss.lock.Unlock()
 			reply.Status = storagerpc.OK
 			return nil
 		}
