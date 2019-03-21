@@ -6,6 +6,21 @@ A simple but scalable twitter-like information dessemination service (call it Si
 
 The backend of this project is an implementation to [https://github.com/CMU-440-F16/p2](https://github.com/CMU-440-F16/p2) (with some modifications).
 
+### Use cases
+
+**Creating User:**
+User need first sign up before posting any tweet or subscribing other users. For simplicity, we don’t allow user to delete account.
+
+**Subscribing/Unsubscribing:** Users can subscribe other users. By representing each subscription relation as a directed edge, we can represent user graph as a directed graph.
+
+**Posting Tweets:** Users can post tweet. Which can contains string and image. Deleting Tweets Given a user id and a key uniquely identifying a tweet. If the tweet is posted by that user, then it can be deleted.
+
+**Timeline:** Given a user id, returns a list of most recent tweets of that user. 
+
+**Home Timeline:** Given a user id, returns a list of most recent tweets of all users
+subscribed by that user (including the user itself).
+
+
 The code is organized as follows:
 
 ```
@@ -72,3 +87,17 @@ $GOPATH/bin/rwebserver -masterApp="localhost:${STW_PORT}"
 ```
 
 Parameter specifications of each server can be found in `$GOPATH/src/runners`.
+
+### Stress Test
+
+Deopoly system on a single laptop and run 10 clients each perform 1000 random operations among **Creating User**,**Subscribing/Unsubscribing**,**Posting Tweets**,**Timeline**,**Home Timeline**. Measure time consumed to finish all operations:
+
+| Total Operations |Web Server|App Server|Storage Server| Time Consumed(s) |
+| ------------- |:-------------:| -----:|:--:|:--:|
+| 10000      | 1 | 1 | 1 | 1.537357634 |
+| 10000      | 1 | 2 | 2 | 1.511023952 |
+| 10000      | 1 | 3 | 3 | 1.537357634 |
+| 10000      | 1 | 5 | 5 | 2.459257819 |
+| 10000      | 1 |10 |10 | 2.430755564 |
+
+(TO DO: Measure on multiple machien)

@@ -1,7 +1,7 @@
 package webserver
 
 import (
-	//"fmt"
+	"fmt"
 	"errors"
 	//"net"
  	"net/http"
@@ -10,13 +10,19 @@ import (
  	"log"
  	"io/ioutil"
 	"encoding/json"
+	"strings"
 
  	"rpc/stwrpc"
+ 	"github.com/willf/bloom"
 )
 
 type webServer struct {
 	stwServers []string
 	stwConns map[string]*rpc.Client
+	mux *http.ServeMux
+	zombieFilter *bloom.BloomFilter
+	underHighLoad bool
+	avgLatency float32
 }
 
 func echoHandler(w http.ResponseWriter, r *http.Request){
@@ -44,7 +50,30 @@ func (ws *webServer) getStwConn(key string) *rpc.Client {
 }
 
 func (ws *webServer) usersHandler(w http.ResponseWriter, r *http.Request){
-    echoHandler(w,r)
+	switch r.Method {
+	case http.MethodGet:
+	    echoHandler(w,r)
+	case http.MethodPost:
+		decoder := json.NewDecoder(r.Body)
+	    var args stwrpc.PostArgs
+	    err := decoder.Decode(&args)
+	    if err!=nil {
+	    	w.WriteHeader(http.StatusBadRequest)
+	    	echoHandler(w,r)
+			return
+	    }
+
+	    uid := args.UserID
+	    cli := ws.getStwConn(uid)
+	    
+	    args2 := &stwrpc.CreateUserArgs{UserID: uid}
+		var reply stwrpc.CreateUserReply
+		err = cli.Call("StwServer.CreateUser", args2, &reply)
+		if err!=nil {
+			log.Println(err)
+		}
+		json.NewEncoder(w).Encode(reply)
+	}
 }
 func (ws *webServer) subscriptionHandler(w http.ResponseWriter, r *http.Request){
 	ss, ok := r.URL.Query()["UserID"]
@@ -72,14 +101,14 @@ func (ws *webServer) subscriptionHandler(w http.ResponseWriter, r *http.Request)
 		if err!=nil {
 			log.Println(err)
 		}
-
+		json.NewEncoder(w).Encode(reply)
 	case http.MethodDelete:
 	    // Remove the record.
 		err := cli.Call("StwServer.Unsubscribe", args, &reply)
 		if err!=nil {
 			log.Println(err)
 		}
-
+		json.NewEncoder(w).Encode(reply)
 	default:
 	    w.WriteHeader(http.StatusBadRequest)
 	    echoHandler(w,r)
@@ -138,6 +167,7 @@ func (ws *webServer) postsHandler(w http.ResponseWriter, r *http.Request){
 	    	w.WriteHeader(http.StatusBadRequest)
 			return
 	    }
+	    json.NewEncoder(w).Encode(reply)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -214,12 +244,65 @@ func (ws *webServer) homeHandler(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(reply)
 }
 
+func (ws *webServer) servePuzzle(w http.ResponseWriter, r *http.Request){
+	remoteIP := strings.Split(r.RemoteAddr,":")[0]
+	switch r.Method {
+	case http.MethodPost:
+		isZombie := ws.zombieFilter.Test([]byte(remoteIP))
+		if isZombie {
+			ws.zombieFilter.Remove([]byte(remoteIP))
+		}
+		//set passcode in cookie
+		http.SetCookie(w, &http.Cookie{
+			Name:    "passcode",
+			Value:   "passcode",
+			Expires: time.Now().Add(111 * time.Second),
+		})
+		ws.mux.ServeHTTP(w,r)
+	case http.MethodGet:
+		ws.zombieFilter.Add([]byte(remoteIP))
+		fmt.Fprintf(w, 
+			"<html><head>Confirm you are not Bot</head>"+
+			"<body><form method='post'>"+
+			"<input type='submit' value='ImNotBot'>"+
+			"</form></body></html>",
+		)
+	}
+}
+
+func (ws *webServer) ddosProtectionWrapper(w http.ResponseWriter, r *http.Request){
+	remoteIP := strings.Split(r.RemoteAddr,":")[0]
+
+	//check cookie to see if answered puzzle
+	_, err := r.Cookie("passcode")
+	
+	if err!=nil {
+		isZombie := ws.zombieFilter.Test([]byte(remoteIP))
+		if ws.underHighLoad || isZombie {
+			// enter Puzzle page
+			ws.servePuzzle(w, r)
+			return
+		}
+	}
+
+	t1 := time.Now().Unix()
+	ws.mux.ServeHTTP(w,r)
+	delta := time.Now().Unix()-t1
+	ws.avgLatency = 0.99*ws.avgLatency + 0.01*float32(delta)
+	if ws.avgLatency>=0.1 {
+		ws.underHighLoad = true
+	}else{
+		ws.underHighLoad = false
+	}
+}
 
 
 func NewWebServer(myHostPort, masterStwServer string) (WebServer, error) {
 	ws := &webServer{
 		stwServers: []string{},
 		stwConns: make(map[string]*rpc.Client),
+		mux: http.NewServeMux(),
+		zombieFilter: bloom.New(20000, 1),
 	}
 
 	if masterStwServer != "" {
@@ -249,28 +332,19 @@ func NewWebServer(myHostPort, masterStwServer string) (WebServer, error) {
 		}
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
+
+	ws.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
         http.ServeFile(w, r, "./client/index.html")
     })
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./client/"))))
-	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./client/"))))
-	http.HandleFunc("/users", ws.usersHandler)
-	http.HandleFunc("/subscriptions", ws.subscriptionHandler)
-	http.HandleFunc("/posts", ws.postsHandler)
-	http.HandleFunc("/timeline", ws.timelineHandler)
-	http.HandleFunc("/home", ws.homeHandler)
+	ws.mux.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("./client/"))))
+	ws.mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./client/"))))
+	ws.mux.HandleFunc("/users", ws.usersHandler)
+	ws.mux.HandleFunc("/subscriptions", ws.subscriptionHandler)
+	ws.mux.HandleFunc("/posts", ws.postsHandler)
+	ws.mux.HandleFunc("/timeline", ws.timelineHandler)
+	ws.mux.HandleFunc("/home", ws.homeHandler)
 
-	s := &http.Server{
-		Addr:           myHostPort,
-		Handler:        nil,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
-	}
-	err := s.ListenAndServe()
-	if err != nil {
-        log.Fatal("ListenAndServe: ", err)
-    }
+	go http.ListenAndServe(myHostPort, http.HandlerFunc(ws.ddosProtectionWrapper))
 	
 	return ws, nil
 }

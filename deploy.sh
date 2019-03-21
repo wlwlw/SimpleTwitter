@@ -43,8 +43,8 @@ STW_SERVER=$GOPATH/bin/rstwserver
 WEB_PORT=8080
 WEB_SERVER=$GOPATH/bin/rwebserver
 
-STORAGE_ID=('0' '0' '0' '0' '0') # assign random id if set 0
-STW_SERVER_NUM=5
+STORAGE_ID=('0') # assign random id if set 0
+STW_SERVER_NUM=1
 
 function startStorageServers {
     N=${#STORAGE_ID[@]}

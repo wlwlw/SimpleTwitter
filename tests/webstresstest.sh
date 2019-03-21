@@ -25,7 +25,12 @@ if [ $? -ne 0 ]; then
    echo "FAIL: code does not compile"
    exit $?
 fi
-go install tests/stresstest
+go install runners/rwebserver
+if [ $? -ne 0 ]; then
+   echo "FAIL: code does not compile"
+   exit $?
+fi
+go install tests/webstresstest
 if [ $? -ne 0 ]; then
    echo "FAIL: code does not compile"
    exit $?
@@ -34,9 +39,12 @@ fi
 # Pick random port between [10000, 20000).
 STORAGE_PORT=$(((RANDOM % 10000) + 10000))
 STORAGE_SERVER=$GOPATH/bin/rstorage
-STRESS_CLIENT=$GOPATH/bin/stresstest
+STRESS_CLIENT=$GOPATH/bin/webstresstest
 STW_PORT=$(((RANDOM % 10000) + 20000))
 STW_SERVER=$GOPATH/bin/rstwserver
+
+WEB_PORT=8080
+WEB_SERVER=$GOPATH/bin/rwebserver
 
 function startStorageServers {
     N=${#STORAGE_ID[@]}
@@ -92,11 +100,25 @@ function stopStwServers {
     done
 }
 
+function startWebServer {
+    ${WEB_SERVER} -port=${WEB_PORT} -masterApp="localhost:${STW_PORT}" &
+    WEB_SERVER_PID=$!
+    sleep 1
+}
+
+function stopWebServer {
+    kill -9 ${WEB_SERVER_PID}
+    wait ${WEB_SERVER_PID} 2> /dev/null
+}
+
 function testStress {
     echo "Starting ${#STORAGE_ID[@]} storage server(s)..."
     startStorageServers
     echo "Starting ${STW_SERVER_NUM} App server(s)..."
     startStwServers
+    echo "Starting web server..."
+    startWebServer
+
     # Start stress clients
     C=0
     K=${#CLIENT_COUNT[@]}
@@ -104,7 +126,7 @@ function testStress {
     do
         for CLIENT in `seq 0 $((CLIENT_COUNT[$USER] - 1))`
         do
-            ${STRESS_CLIENT} -port=${STW_PORT[$((C % STW_SERVER_NUM))]} -clientId=${CLIENT} ${USER} ${K} & 
+            ${STRESS_CLIENT} -port=${WEB_PORT} -clientId=${CLIENT} ${USER} ${K} & 
             STRESS_CLIENT_PID[$C]=$!
             # Setup background thread to kill client upon timeout.
             sleep ${TIMEOUT} && kill -9 ${STRESS_CLIENT_PID[$C]} &>/dev/null &
@@ -131,6 +153,7 @@ function testStress {
         echo "FAIL: ${FAIL} clients failed"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
+    stopWebServer
     stopStwServers
     stopStorageServers
     sleep 1
@@ -287,8 +310,8 @@ FAIL_COUNT=0
 
 echo "Warning: huge load test better run one by one if running on single host"
 
-testHugeLoadPerformance1
-testHugeLoadPerformance2
+# testHugeLoadPerformance1
+# testHugeLoadPerformance2
 testHugeLoadPerformance3
 testHugeLoadPerformance4
 testHugeLoadPerformance5
