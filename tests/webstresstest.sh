@@ -259,6 +259,80 @@ function testHugeLoadPerformance1 {
     testStress
 }
 
+function testHugeLoadPerformance120 {
+    echo "Running testHugeLoadPerformance120:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('20')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance130 {
+    echo "Running testHugeLoadPerformance130:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('30')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance140 {
+    echo "Running testHugeLoadPerformance140:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('40')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance150 {
+    echo "Running testHugeLoadPerformance150:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('50')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance160 {
+    echo "Running testHugeLoadPerformance160:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('60')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance170 {
+    echo "Running testHugeLoadPerformance170:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('70')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance180 {
+    echo "Running testHugeLoadPerformance180:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('80')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance190 {
+    echo "Running testHugeLoadPerformance190:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('90')
+    TIMEOUT=30
+    testStress
+}
+function testHugeLoadPerformance1100 {
+    echo "Running testHugeLoadPerformance1100:"
+    STORAGE_ID=('0')
+    STW_SERVER_NUM=1
+    CLIENT_COUNT=('100')
+    TIMEOUT=30
+    testStress
+}
+
+
 function testHugeLoadPerformance2 {
     echo "Running testHugeLoadPerformance2:"
     STORAGE_ID=('0' '0')
@@ -311,9 +385,19 @@ FAIL_COUNT=0
 echo "Warning: huge load test better run one by one if running on single host"
 
 # testHugeLoadPerformance1
+# testHugeLoadPerformance120
+# testHugeLoadPerformance130
+# testHugeLoadPerformance140
+# testHugeLoadPerformance150
+# testHugeLoadPerformance160
+# testHugeLoadPerformance170
+# testHugeLoadPerformance180
+testHugeLoadPerformance190
+testHugeLoadPerformance1100
+
 # testHugeLoadPerformance2
-testHugeLoadPerformance3
-testHugeLoadPerformance4
-testHugeLoadPerformance5
+# testHugeLoadPerformance3
+# testHugeLoadPerformance4
+# testHugeLoadPerformance5
 
 echo "Passed (${PASS_COUNT}/$((PASS_COUNT + FAIL_COUNT))) tests"

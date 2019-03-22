@@ -90,14 +90,14 @@ Parameter specifications of each server can be found in `$GOPATH/src/runners`.
 
 ### Stress Test
 
-Deopoly system on a single laptop and run 10 clients each perform 1000 random operations among **Creating User**,**Subscribing/Unsubscribing**,**Posting Tweets**,**Timeline**,**Home Timeline**. Measure time consumed to finish all operations:
+Depoly system on a single laptop and run 10 clients with each of them perform 1000 random operations among **Creating User**,**Subscribing/Unsubscribing**,**Posting Tweets**,**Timeline**,**Home Timeline**. Measure time consumed to finish all operations:
 
 | Total Operations |Web Server|App Server|Storage Server| Time Consumed(s) |
 | ------------- |:-------------:| -----:|:--:|:--:|
-| 10000      | 1 | 1 | 1 | 1.537357634 |
-| 10000      | 1 | 2 | 2 | 1.511023952 |
-| 10000      | 1 | 3 | 3 | 1.537357634 |
-| 10000      | 1 | 5 | 5 | 2.459257819 |
-| 10000      | 1 |10 |10 | 2.430755564 |
+| 10000      | 1 | 1 | 1 | 1.962181201 |
+| 10000      | 1 | 2 | 2 | 2.089283155 |
+| 10000      | 1 | 3 | 3 | 2.918431771 |
+| 10000      | 1 | 5 | 5 | 2.423513048 |
+| 10000      | 1 |10 |10 | 2.21375695 |
 
-(TO DO: Measure on multiple machien)
+(TO DO: Measuring on multiple machines)

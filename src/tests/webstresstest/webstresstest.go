@@ -20,12 +20,13 @@ const (
 	Timeline
 	Post
 	HomeTimeline
+	DownloadIMG
 )
 
 var (
 	portnum  = flag.Int("port", 9010, "server port # to connect to")
 	clientId = flag.String("clientId", "0", "client id for user")
-	numCmds  = flag.Int("numCmds", 1000, "number of random commands to execute per client")
+	numCmds  = flag.Int("numCmds", 10, "number of random commands to execute per client")
 	seed     = flag.Int64("seed", 0, "seed for random number generator used to execute commands")
 )
 
@@ -41,7 +42,7 @@ var statusMap = map[stwrpc.Status]string{
 
 var (
 	// Debugging information (counts the total number of operations performed).
-	fs, as, rs, gt, pt, gtbs int
+	fs, as, rs, gt, pt, gtbs, dimg int
 	// Set this to true to print debug information.
 	debug bool
 )
@@ -56,21 +57,22 @@ func main() {
 	if err != nil {
 		LOGE.Fatalln("FAIL: NewHttpClient returned error:", err)
 	}
+	//debug = true
 
 	user := flag.Arg(0)
 	userNum, err := strconv.Atoi(user)
 	if err != nil {
-		LOGE.Fatalf("FAIL: user %s not an integer\n", user)
+		// LOGE.Fatalf("FAIL: user %s not an integer\n", user)
 	}
 	numTargets, err := strconv.Atoi(flag.Arg(1))
 	// num := (*numCmds)*numTargets
 	if err != nil {
-		LOGE.Fatalf("FAIL: numTargets invalid %s\n", flag.Arg(1))
+		// LOGE.Fatalf("FAIL: numTargets invalid %s\n", flag.Arg(1))
 	}
 
 	_, err = client.CreateUser(user)
 	if err != nil {
-		LOGE.Fatalf("FAIL: error when creating userID '%s': %s\n", user, err)
+		// LOGE.Fatalf("FAIL: error when creating userID '%s': %s\n", user, err)
 	}
 
 	stwIndex := 0
@@ -94,6 +96,8 @@ func main() {
 			pt++
 		case HomeTimeline:
 			gtbs++
+		case DownloadIMG:
+			dimg++
 		}
 	}
 
@@ -104,6 +108,7 @@ func main() {
 		fmt.Println("Timeline:", gt)
 		fmt.Println("Post:", pt)
 		fmt.Println("HomeTimeline:", gtbs)
+		fmt.Println("DownloadIMG", dimg)
 	}
 	t := time.Now()
 	//old_cmd :=cmds[0]
@@ -118,28 +123,28 @@ func main() {
 			target := rand.Intn(numTargets)
 			status, err := client.Subscribe(user, strconv.Itoa(target))
 			if err != nil {
-				LOGE.Fatalf("FAIL: Subscribe returned error '%s'\n", err)
+				// LOGE.Fatalf("FAIL: Subscribe returned error '%s'\n", err)
 			}
 			if status == 0 || status == stwrpc.NoSuchUser {
-				LOGE.Fatalf("FAIL: Subscribe returned error status '%s'\n", statusMap[status])
+				// LOGE.Fatalf("FAIL: Subscribe returned error status '%s'\n", statusMap[status])
 			}
 		case Unsubscribe:
 			target := rand.Intn(numTargets)
 			status, err := client.Unsubscribe(user, strconv.Itoa(target))
 			if err != nil {
-				LOGE.Fatalf("FAIL: Unsubscribe returned error '%s'\n", err)
+				// LOGE.Fatalf("FAIL: Unsubscribe returned error '%s'\n", err)
 			}
 			if status == 0 || status == stwrpc.NoSuchUser {
-				LOGE.Fatalf("FAIL: Unsubscribe returned error status '%s'\n", statusMap[status])
+				// LOGE.Fatalf("FAIL: Unsubscribe returned error status '%s'\n", statusMap[status])
 			}
 		case Timeline:
 			target := rand.Intn(numTargets)
 			posts, status, err := client.Timeline(strconv.Itoa(target))
 			if err != nil {
-				LOGE.Fatalf("FAIL: Timeline returned error '%s'\n", err)
+				// LOGE.Fatalf("FAIL: Timeline returned error '%s'\n", err)
 			}
 			if status == 0 {
-				LOGE.Fatalf("FAIL: Timeline returned error status '%s'\n", statusMap[status])
+				// LOGE.Fatalf("FAIL: Timeline returned error status '%s'\n", statusMap[status])
 			}
 			if !validatePosts(&posts, numTargets) {
 				//fmt.Println(&posts, numTargets)
@@ -150,28 +155,33 @@ func main() {
 			msg := fmt.Sprintf("%d;%s", stwVal, *clientId)
 			reply, err := client.Post(user, msg)
 			if err != nil {
-				LOGE.Fatalf("FAIL: Post returned error '%s'\n", err)
+				// LOGE.Fatalf("FAIL: Post returned error '%s'\n", err)
 			}
 			if reply.Status == 0 || reply.Status == stwrpc.NoSuchUser {
-				LOGE.Fatalf("FAIL: Post returned error status '%s'\n",
-					statusMap[reply.Status])
+				// LOGE.Fatalf("FAIL: Post returned error status '%s'\n",
+					// statusMap[reply.Status])
 			}
 			stwIndex++
 		case HomeTimeline:
 			posts, status, err := client.HomeTimeline(user)
 			if err != nil {
-				LOGE.Fatalf("FAIL: HomeTimeline returned error '%s'\n", err)
+				// LOGE.Fatalf("FAIL: HomeTimeline returned error '%s'\n", err)
 			}
 			if status == 0 || status == stwrpc.NoSuchUser {
-				LOGE.Fatalf("FAIL: HomeTimeline returned error status '%s'\n", statusMap[status])
+				// LOGE.Fatalf("FAIL: HomeTimeline returned error status '%s'\n", statusMap[status])
 			}
 			if !validatePosts(&posts, numTargets) {
 				LOGE.Fatalln("FAIL: failed while validating returned posts")
 			}
+		case DownloadIMG:
+			err := client.DownloadIMG()
+			if err != nil {
+				// LOGE.Fatalf("FAIL: DownloadIMG returned error '%s'\n", err)
+			}
 		}
 	}
-	fmt.Println("Executed 1000 operations in: ", time.Now().Sub(t))
-	fmt.Println("PASS")
+    fmt.Println("Executed", *numCmds, "operations in: ", time.Now().Sub(t))
+	// fmt.Println("PASS")
 	os.Exit(7)
 }
 

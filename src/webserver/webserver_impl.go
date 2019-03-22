@@ -22,7 +22,7 @@ type webServer struct {
 	mux *http.ServeMux
 	zombieFilter *bloom.BloomFilter
 	underHighLoad bool
-	avgLatency float32
+	avgLatency float64
 }
 
 func echoHandler(w http.ResponseWriter, r *http.Request){
@@ -65,7 +65,7 @@ func (ws *webServer) usersHandler(w http.ResponseWriter, r *http.Request){
 
 	    uid := args.UserID
 	    cli := ws.getStwConn(uid)
-	    
+
 	    args2 := &stwrpc.CreateUserArgs{UserID: uid}
 		var reply stwrpc.CreateUserReply
 		err = cli.Call("StwServer.CreateUser", args2, &reply)
@@ -279,17 +279,18 @@ func (ws *webServer) ddosProtectionWrapper(w http.ResponseWriter, r *http.Reques
 	if err!=nil {
 		isZombie := ws.zombieFilter.Test([]byte(remoteIP))
 		if ws.underHighLoad || isZombie {
+			// log.Println("Serve Puzzle")
 			// enter Puzzle page
 			ws.servePuzzle(w, r)
 			return
 		}
 	}
 
-	t1 := time.Now().Unix()
+	t1 := time.Now().UnixNano()
 	ws.mux.ServeHTTP(w,r)
-	delta := time.Now().Unix()-t1
-	ws.avgLatency = 0.99*ws.avgLatency + 0.01*float32(delta)
-	if ws.avgLatency>=0.1 {
+	delta := time.Now().UnixNano()-t1
+	ws.avgLatency = 0.9*ws.avgLatency + 0.1*float64(delta)
+	if ws.avgLatency/1000000>=20 {
 		ws.underHighLoad = true
 	}else{
 		ws.underHighLoad = false

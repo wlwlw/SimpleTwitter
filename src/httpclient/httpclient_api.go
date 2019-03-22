@@ -10,5 +10,6 @@ type HttpClient interface {
 	HomeTimeline(userID string) ([]stwrpc.Post, stwrpc.Status, error)
 	Post(userID, contents string) (stwrpc.PostReply, error)
 	DeletePost(userID, postKey string) (stwrpc.Status, error)
+	DownloadIMG() error
 	Close() error
 }

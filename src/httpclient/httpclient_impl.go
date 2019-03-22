@@ -7,10 +7,13 @@ import (
 	"strconv"
 	"encoding/json"
 	"bytes"
-	//"log"
+	"log"
+	"os"
 
 	"rpc/stwrpc"
 )
+
+var LOGE = log.New(os.Stderr, "", log.Lshortfile|log.Lmicroseconds)
 
 type httpClient struct {
 	serverAddr string
@@ -93,6 +96,7 @@ func (tc *httpClient) Timeline(userID string) ([]stwrpc.Post, stwrpc.Status, err
 
 	resp, err := tc.client.Do(req)
     if err != nil {
+    	LOGE.Println(err)
         return nil, 0, err
     }
     defer resp.Body.Close()
@@ -124,7 +128,7 @@ func (tc *httpClient) HomeTimeline(userID string) ([]stwrpc.Post, stwrpc.Status,
     decoder := json.NewDecoder(resp.Body)
     
     err = decoder.Decode(&reply)
-    if err!=nil {
+    if err != nil {
 		return nil, 0, err
 	}
 	return reply.Posts, reply.Status, nil
@@ -168,6 +172,20 @@ func (tc *httpClient) DeletePost(userID, postKey string) (stwrpc.Status, error) 
 		return 0, err
 	}
 	return reply.Status, nil
+}
+
+func (tc *httpClient) DownloadIMG() error {
+	req, err := http.NewRequest("GET", tc.serverAddr+"/assets/images/clock.png", nil)
+	req.Header.Set("Content-Type", "image/png")
+
+	resp, err := tc.client.Do(req)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+    buffer := make([]byte, resp.ContentLength)
+    resp.Body.Read(buffer)
+	return nil
 }
 
 func (tc *httpClient) Close() error {
