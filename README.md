@@ -14,6 +14,7 @@ User need first sign up before posting any tweet or subscribing other users. For
 **Subscribing/Unsubscribing:** Users can subscribe other users. By representing each subscription relation as a directed edge, we can represent user graph as a directed graph.
 
 **Posting Tweets:** Users can post tweet. Which can contains string and image. 
+
 **Deleting Tweets:** Given a user id and a key uniquely identifying a tweet. If the tweet is posted by that user, then it can be deleted.
 
 **Timeline:** Given a user id, returns a list of most recent tweets of that user. 
