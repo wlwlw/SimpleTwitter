@@ -11,7 +11,7 @@ The backend of this project is an implementation to [https://github.com/CMU-440-
 **Creating User:**
 User need first sign up before posting any tweet or subscribing other users. For simplicity, we don’t allow user to delete account.
 
-**Subscribing/Unsubscribing:** Users can subscribe other users. By representing each subscription relation as a directed edge, we can represent user graph as a directed graph.
+**Subscribing/Unsubscribing:** Users can subscribe other users. Such subscription relations should be stored.
 
 **Posting Tweets:** Users can post tweet. Which can contains string and image. 
 
