@@ -1,5 +1,4 @@
 .DS_Store
 bin/*
-client/images/*
 src/github.com
 pkg

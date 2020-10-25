@@ -1,6 +1,6 @@
 ## SimpleTwitter
 
-<img src="https://users.soe.ucsc.edu/~lwang107/userfiles/images/document/design_scale.png" width="70%">
+<img src="https://github.com/wlwlw/SimpleTwitter/tree/master/client/images/design.png" width="70%">
 
 A simple but scalable twitter-like information dessemination service (call it SimpleTwitter for short) that provides a minimum set of functionality including posting tweet, deleting tweet, subscribing/unsubscribing other users and viewing subscribed users' tweets in timeline fashion. A running instance is deployed as a [Demo](http://simpletwitter.liang-w.xyz/).
 
